@@ -28,8 +28,9 @@ fun FloorPlanScreen(
     onDeviceClick: (String) -> Unit
 ) {
     val floors by viewModel.floors.collectAsStateWithLifecycle()
+    val devices by viewModel.devices.collectAsStateWithLifecycle()
     val floor = floors.find { it.id == floorId }
-    val devices = viewModel.getDevicesForFloor(floorId)
+    val floorDevices = devices.filter { it.floorId == floorId }
 
     val rows = floor?.gridRows ?: 5
     val cols = floor?.gridCols ?: 5
@@ -86,7 +87,7 @@ fun FloorPlanScreen(
                     val cellWidth = maxWidth / cols
                     val cellHeight = maxHeight / rows
 
-                    devices.forEach { device ->
+                    floorDevices.forEach { device ->
                         val xOffset = cellWidth * device.gridX
                         val yOffset = cellHeight * device.gridY
 

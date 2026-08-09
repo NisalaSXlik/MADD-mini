@@ -1,7 +1,7 @@
 package com.example.smarthome.data.repository
 
 import android.util.Log
-import com.example.smarthome.data.model.Alert
+import com.example.smarthome.data.model.UsageLog
 import com.example.smarthome.data.model.Device
 import com.example.smarthome.data.model.Floor
 import com.google.firebase.auth.FirebaseAuth
@@ -88,9 +88,13 @@ class SmartHomeRepository @Inject constructor() {
     }
 
     fun updateDevice(device: Device) {
-        Log.d("SmartHomeRepo", "Updating device ${device.id} in DB")
+        Log.d("SmartHomeRepo", "Updating device ${device.id} in DB: ${device.name} -> status=${device.status}")
         database.getReference("devices").child(device.id).setValue(device)
             .addOnSuccessListener { Log.d("SmartHomeRepo", "Successfully updated device ${device.id}") }
             .addOnFailureListener { e -> Log.e("SmartHomeRepo", "Failed to update device ${device.id}", e) }
+    }
+
+    fun logUsage(log: UsageLog) {
+        database.getReference("usageLogs").push().setValue(log)
     }
 }

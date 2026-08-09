@@ -58,31 +58,60 @@ fun DeviceDetailScreen(
         ) {
             // Status Card
             Card(modifier = Modifier.fillMaxWidth()) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(text = "Device Type: ${device.type}", style = MaterialTheme.typography.bodyLarge)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Status: ${device.status}",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = when (device.status) {
-                                DeviceStatus.ON -> Color(0xFF4CAF50)
-                                DeviceStatus.OFF -> Color(0xFF9E9E9E)
-                                DeviceStatus.ERROR -> Color(0xFFF44336)
-                                DeviceStatus.DISCONNECTED -> Color(0xFFFF9800)
-                            }
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(text = "Device Type: ${device.type}", style = MaterialTheme.typography.bodyLarge)
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Status: ${device.status}",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = when (device.status) {
+                                    DeviceStatus.ON -> Color(0xFF4CAF50)
+                                    DeviceStatus.OFF -> Color(0xFF9E9E9E)
+                                    DeviceStatus.ERROR -> Color(0xFFF44336)
+                                    DeviceStatus.DISCONNECTED -> Color(0xFFFF9800)
+                                }
+                            )
+                        }
+                        Switch(
+                            checked = device.status == DeviceStatus.ON,
+                            onCheckedChange = { isOn -> viewModel.toggleDeviceStatus(isOn) }
                         )
                     }
-                    Switch(
-                        checked = device.status == DeviceStatus.ON,
-                        onCheckedChange = { isOn -> viewModel.toggleDeviceStatus(isOn) }
-                    )
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+                    Text(text = "Simulate Device State:", style = MaterialTheme.typography.labelLarge)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        FilterChip(
+                            selected = device.status == DeviceStatus.ON,
+                            onClick = { viewModel.toggleDeviceStatus(true) },
+                            label = { Text("ON") }
+                        )
+                        FilterChip(
+                            selected = device.status == DeviceStatus.OFF,
+                            onClick = { viewModel.toggleDeviceStatus(false) },
+                            label = { Text("OFF") }
+                        )
+                        FilterChip(
+                            selected = device.status == DeviceStatus.DISCONNECTED,
+                            onClick = { viewModel.setDeviceStatus(DeviceStatus.DISCONNECTED) },
+                            label = { Text("DISCONNECT") }
+                        )
+                        FilterChip(
+                            selected = device.status == DeviceStatus.ERROR,
+                            onClick = { viewModel.setDeviceStatus(DeviceStatus.ERROR) },
+                            label = { Text("ERROR") }
+                        )
+                    }
                 }
             }
 

@@ -397,20 +397,20 @@ public final class DaggerSmartHomeApplication_HiltComponents_SingletonC {
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
-      static String com_example_smarthome_ui_device_DeviceDetailViewModel = "com.example.smarthome.ui.device.DeviceDetailViewModel";
+      static String com_example_smarthome_ui_reports_ReportsViewModel = "com.example.smarthome.ui.reports.ReportsViewModel";
 
       static String com_example_smarthome_ui_dashboard_DashboardViewModel = "com.example.smarthome.ui.dashboard.DashboardViewModel";
 
-      static String com_example_smarthome_ui_reports_ReportsViewModel = "com.example.smarthome.ui.reports.ReportsViewModel";
+      static String com_example_smarthome_ui_device_DeviceDetailViewModel = "com.example.smarthome.ui.device.DeviceDetailViewModel";
 
       @KeepFieldType
-      DeviceDetailViewModel com_example_smarthome_ui_device_DeviceDetailViewModel2;
+      ReportsViewModel com_example_smarthome_ui_reports_ReportsViewModel2;
 
       @KeepFieldType
       DashboardViewModel com_example_smarthome_ui_dashboard_DashboardViewModel2;
 
       @KeepFieldType
-      ReportsViewModel com_example_smarthome_ui_reports_ReportsViewModel2;
+      DeviceDetailViewModel com_example_smarthome_ui_device_DeviceDetailViewModel2;
     }
   }
 
@@ -459,20 +459,20 @@ public final class DaggerSmartHomeApplication_HiltComponents_SingletonC {
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
+      static String com_example_smarthome_ui_dashboard_DashboardViewModel = "com.example.smarthome.ui.dashboard.DashboardViewModel";
+
       static String com_example_smarthome_ui_device_DeviceDetailViewModel = "com.example.smarthome.ui.device.DeviceDetailViewModel";
 
       static String com_example_smarthome_ui_reports_ReportsViewModel = "com.example.smarthome.ui.reports.ReportsViewModel";
 
-      static String com_example_smarthome_ui_dashboard_DashboardViewModel = "com.example.smarthome.ui.dashboard.DashboardViewModel";
+      @KeepFieldType
+      DashboardViewModel com_example_smarthome_ui_dashboard_DashboardViewModel2;
 
       @KeepFieldType
       DeviceDetailViewModel com_example_smarthome_ui_device_DeviceDetailViewModel2;
 
       @KeepFieldType
       ReportsViewModel com_example_smarthome_ui_reports_ReportsViewModel2;
-
-      @KeepFieldType
-      DashboardViewModel com_example_smarthome_ui_dashboard_DashboardViewModel2;
     }
 
     private static final class SwitchingProvider<T> implements Provider<T> {
@@ -500,7 +500,7 @@ public final class DaggerSmartHomeApplication_HiltComponents_SingletonC {
           return (T) new DashboardViewModel(singletonCImpl.smartHomeRepositoryProvider.get());
 
           case 1: // com.example.smarthome.ui.device.DeviceDetailViewModel 
-          return (T) new DeviceDetailViewModel(viewModelCImpl.savedStateHandle);
+          return (T) new DeviceDetailViewModel(viewModelCImpl.savedStateHandle, singletonCImpl.smartHomeRepositoryProvider.get());
 
           case 2: // com.example.smarthome.ui.reports.ReportsViewModel 
           return (T) new ReportsViewModel();

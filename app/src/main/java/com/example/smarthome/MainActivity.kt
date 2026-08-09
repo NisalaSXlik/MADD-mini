@@ -13,7 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -37,8 +37,8 @@ class MainActivity : ComponentActivity() {
             MaterialTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     val navController = rememberNavController()
-                    val dashboardViewModel: DashboardViewModel = viewModel()
-                    val reportsViewModel: ReportsViewModel = viewModel()
+                    val dashboardViewModel: DashboardViewModel = hiltViewModel()
+                    val reportsViewModel: ReportsViewModel = hiltViewModel()
 
                     val navBackStackEntry by navController.currentBackStackEntryAsState()
                     val currentRoute = navBackStackEntry?.destination?.route
@@ -110,8 +110,8 @@ class MainActivity : ComponentActivity() {
                             composable(
                                 route = "deviceDetail/{deviceId}",
                                 arguments = listOf(navArgument("deviceId") { type = NavType.StringType })
-                            ) { _ ->
-                                val deviceDetailViewModel: DeviceDetailViewModel = viewModel()
+                            ) { backStackEntry ->
+                                val deviceDetailViewModel: DeviceDetailViewModel = hiltViewModel()
                                 DeviceDetailScreen(
                                     viewModel = deviceDetailViewModel,
                                     onBackClick = { navController.popBackStack() }
