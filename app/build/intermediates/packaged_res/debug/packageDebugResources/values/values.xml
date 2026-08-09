@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Minimal Kotlin XML</string>
+    <string name="firebase_database_url" translatable="false">https://madd-mini-project-default-rtdb.firebaseio.com</string>
     <string name="gcm_defaultSenderId" translatable="false">895644591812</string>
     <string name="google_api_key" translatable="false">AIzaSyBFTgIcutyVvYBCgkCuPSt6zZ7QjEYvEDA</string>
     <string name="google_app_id" translatable="false">1:895644591812:android:f2e442fff0b0e33ab68b91</string>

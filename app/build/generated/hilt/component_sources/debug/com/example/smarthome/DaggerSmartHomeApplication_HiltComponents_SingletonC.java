@@ -6,6 +6,7 @@ import android.view.View;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.SavedStateHandle;
 import androidx.lifecycle.ViewModel;
+import com.example.smarthome.data.repository.SmartHomeRepository;
 import com.example.smarthome.ui.dashboard.DashboardViewModel;
 import com.example.smarthome.ui.dashboard.DashboardViewModel_HiltModules;
 import com.example.smarthome.ui.device.DeviceDetailViewModel;
@@ -396,17 +397,17 @@ public final class DaggerSmartHomeApplication_HiltComponents_SingletonC {
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
-      static String com_example_smarthome_ui_dashboard_DashboardViewModel = "com.example.smarthome.ui.dashboard.DashboardViewModel";
-
       static String com_example_smarthome_ui_device_DeviceDetailViewModel = "com.example.smarthome.ui.device.DeviceDetailViewModel";
+
+      static String com_example_smarthome_ui_dashboard_DashboardViewModel = "com.example.smarthome.ui.dashboard.DashboardViewModel";
 
       static String com_example_smarthome_ui_reports_ReportsViewModel = "com.example.smarthome.ui.reports.ReportsViewModel";
 
       @KeepFieldType
-      DashboardViewModel com_example_smarthome_ui_dashboard_DashboardViewModel2;
+      DeviceDetailViewModel com_example_smarthome_ui_device_DeviceDetailViewModel2;
 
       @KeepFieldType
-      DeviceDetailViewModel com_example_smarthome_ui_device_DeviceDetailViewModel2;
+      DashboardViewModel com_example_smarthome_ui_dashboard_DashboardViewModel2;
 
       @KeepFieldType
       ReportsViewModel com_example_smarthome_ui_reports_ReportsViewModel2;
@@ -458,20 +459,20 @@ public final class DaggerSmartHomeApplication_HiltComponents_SingletonC {
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
-      static String com_example_smarthome_ui_dashboard_DashboardViewModel = "com.example.smarthome.ui.dashboard.DashboardViewModel";
-
       static String com_example_smarthome_ui_device_DeviceDetailViewModel = "com.example.smarthome.ui.device.DeviceDetailViewModel";
 
       static String com_example_smarthome_ui_reports_ReportsViewModel = "com.example.smarthome.ui.reports.ReportsViewModel";
 
-      @KeepFieldType
-      DashboardViewModel com_example_smarthome_ui_dashboard_DashboardViewModel2;
+      static String com_example_smarthome_ui_dashboard_DashboardViewModel = "com.example.smarthome.ui.dashboard.DashboardViewModel";
 
       @KeepFieldType
       DeviceDetailViewModel com_example_smarthome_ui_device_DeviceDetailViewModel2;
 
       @KeepFieldType
       ReportsViewModel com_example_smarthome_ui_reports_ReportsViewModel2;
+
+      @KeepFieldType
+      DashboardViewModel com_example_smarthome_ui_dashboard_DashboardViewModel2;
     }
 
     private static final class SwitchingProvider<T> implements Provider<T> {
@@ -496,7 +497,7 @@ public final class DaggerSmartHomeApplication_HiltComponents_SingletonC {
       public T get() {
         switch (id) {
           case 0: // com.example.smarthome.ui.dashboard.DashboardViewModel 
-          return (T) new DashboardViewModel();
+          return (T) new DashboardViewModel(singletonCImpl.smartHomeRepositoryProvider.get());
 
           case 1: // com.example.smarthome.ui.device.DeviceDetailViewModel 
           return (T) new DeviceDetailViewModel(viewModelCImpl.savedStateHandle);
@@ -582,9 +583,17 @@ public final class DaggerSmartHomeApplication_HiltComponents_SingletonC {
   private static final class SingletonCImpl extends SmartHomeApplication_HiltComponents.SingletonC {
     private final SingletonCImpl singletonCImpl = this;
 
+    private Provider<SmartHomeRepository> smartHomeRepositoryProvider;
+
     private SingletonCImpl() {
 
+      initialize();
 
+    }
+
+    @SuppressWarnings("unchecked")
+    private void initialize() {
+      this.smartHomeRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<SmartHomeRepository>(singletonCImpl, 0));
     }
 
     @Override
@@ -604,6 +613,28 @@ public final class DaggerSmartHomeApplication_HiltComponents_SingletonC {
     @Override
     public ServiceComponentBuilder serviceComponentBuilder() {
       return new ServiceCBuilder(singletonCImpl);
+    }
+
+    private static final class SwitchingProvider<T> implements Provider<T> {
+      private final SingletonCImpl singletonCImpl;
+
+      private final int id;
+
+      SwitchingProvider(SingletonCImpl singletonCImpl, int id) {
+        this.singletonCImpl = singletonCImpl;
+        this.id = id;
+      }
+
+      @SuppressWarnings("unchecked")
+      @Override
+      public T get() {
+        switch (id) {
+          case 0: // com.example.smarthome.data.repository.SmartHomeRepository 
+          return (T) new SmartHomeRepository();
+
+          default: throw new AssertionError(id);
+        }
+      }
     }
   }
 }

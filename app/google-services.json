@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "895644591812",
+    "firebase_url": "https://madd-mini-project-default-rtdb.firebaseio.com",
     "project_id": "madd-mini-project",
     "storage_bucket": "madd-mini-project.firebasestorage.app"
   },
