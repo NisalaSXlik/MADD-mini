@@ -1,0 +1,12 @@
+R_DEF: Internal format may change without notice
+local
+id btnHome
+id btnSummary
+id btnWorkout
+id emailEditText
+layout activity_main
+layout activity_summary
+layout activity_workout
+string app_name
+string hello
+style AppTheme

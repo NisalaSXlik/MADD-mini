@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Minimal Kotlin XML</string>
+    <string name="hello">Hello from Kotlin XML</string>
+</resources>
