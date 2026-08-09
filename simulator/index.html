@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Home Hardware Simulator</title>
+    <style>
+        :root {
+            --primary: #6200EE;
+            --primary-variant: #3700B3;
+            --background: #121212;
+            --surface: #1E1E1E;
+            --surface-card: #2D2D2D;
+            --text-primary: #E0E0E0;
+            --text-secondary: #A0A0A0;
+            --success: #4CAF50;
+            --danger: #F44336;
+            --warning: #FF9800;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--background);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 20px;
+        }
+
+        header {
+            max-width: 1200px;
+            margin: 0 auto 20px auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #BB86FC;
+        }
+
+        .config-box {
+            background: var(--surface);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .config-box input {
+            background: #333;
+            border: 1px solid #444;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background: var(--primary-variant);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--surface-card);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-left: 6px solid var(--text-secondary);
+        }
+
+        .card.status-on {
+            border-left-color: var(--success);
+        }
+
+        .card.status-off {
+            border-left-color: var(--text-secondary);
+        }
+
+        .card.status-disconnected {
+            border-left-color: var(--danger);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .device-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0 0 5px 0;
+        }
+
+        .device-type {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            background: rgba(255,255,255,0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .badge.ON { background: rgba(76, 175, 80, 0.2); color: var(--success); }
+        .badge.OFF { background: rgba(160, 160, 160, 0.2); color: var(--text-secondary); }
+        .badge.DISCONNECTED { background: rgba(244, 67, 54, 0.2); color: var(--danger); }
+
+        .card-body {
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .card-footer {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 12px;
+        }
+
+        .control-btn {
+            background: #444;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            flex: 1;
+        }
+
+        .control-btn:hover {
+            background: #555;
+        }
+
+        .control-btn.btn-on { background: rgba(76, 175, 80, 0.3); color: #81C784; }
+        .control-btn.btn-off { background: rgba(160, 160, 160, 0.3); color: #E0E0E0; }
+        .control-btn.btn-disc { background: rgba(244, 67, 54, 0.3); color: #E57373; }
+
+        .status-msg {
+            text-align: center;
+            color: var(--text-secondary);
+            grid-column: 1 / -1;
+            padding: 40px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Smart Home Hardware Simulator</h1>
+        <div id="connection-status" style="font-size: 14px; color: var(--warning);">Connecting to Firebase...</div>
+    </header>
+
+    <div class="config-box">
+        <input type="text" id="db-url" placeholder="Database URL (e.g., https://xxx-default-rtdb.firebaseio.com)" />
+        <button class="btn" id="connect-btn">Connect & Load Devices</button>
+    </div>
+
+    <div class="container" id="device-container">
+        <div class="status-msg">Enter your Firebase Realtime Database URL above to connect.</div>
+    </div>
+
+    <!-- Firebase SDKs (Modular v10 via CDN) -->
+    <script type="module">
+        import { initializeApp, getApps, deleteApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        let db = null;
+        let devicesRef = null;
+
+        const connectBtn = document.getElementById("connect-btn");
+        const dbUrlInput = document.getElementById("db-url");
+        const statusDiv = document.getElementById("connection-status");
+        const container = document.getElementById("device-container");
+
+        // Try loading saved URL from localStorage
+        const savedUrl = localStorage.getItem("sim_db_url");
+        if (savedUrl) {
+            dbUrlInput.value = savedUrl;
+        }
+
+        connectBtn.addEventListener("click", () => {
+            const url = dbUrlInput.value.trim();
+            if (!url) {
+                alert("Please enter a valid Realtime Database URL");
+                return;
+            }
+            localStorage.setItem("sim_db_url", url);
+            initFirebase(url);
+        });
+
+        function initFirebase(databaseURL) {
+            try {
+                statusDiv.innerText = "Connecting...";
+                statusDiv.style.color = "var(--warning)";
+
+                // Clean up any existing apps to avoid duplicate initialization error
+                getApps().forEach(existingApp => {
+                    deleteApp(existingApp).catch(() => {});
+                });
+
+                const firebaseConfig = {
+                    databaseURL: databaseURL,
+                    projectId: "madd-mini-project"
+                };
+
+                const app = initializeApp(firebaseConfig);
+                db = getDatabase(app);
+                devicesRef = ref(db, "devices");
+
+                onValue(devicesRef, (snapshot) => {
+                    statusDiv.innerText = "Connected (Live)";
+                    statusDiv.style.color = "var(--success)";
+                    renderDevices(snapshot.val());
+                }, (error) => {
+                    statusDiv.innerText = "Connection Failed: " + error.message;
+                    statusDiv.style.color = "var(--danger)";
+                });
+
+            } catch (e) {
+                statusDiv.innerText = "Error: " + e.message;
+                statusDiv.style.color = "var(--danger)";
+            }
+        }
+
+        function renderDevices(devicesObj) {
+            container.innerHTML = "";
+
+            if (!devicesObj) {
+                container.innerHTML = '<div class="status-msg">No devices found in /devices path. Add some devices in your Android app or DB!</div>';
+                return;
+            }
+
+            Object.keys(devicesObj).forEach(deviceId => {
+                const device = devicesObj[deviceId];
+                const status = device.status || "OFF";
+                const type = device.type || "GENERIC";
+                const name = device.name || deviceId;
+
+                const card = document.createElement("div");
+                card.className = `card status-${status.toLowerCase()}`;
+
+                let extraInfo = "";
+                if (type === "IRON_SLOT") {
+                    const maxDur = device.maxOnDurationMinutes || 30;
+                    const turnedOnAt = device.turnedOnAt ? new Date(device.turnedOnAt).toLocaleTimeString() : "N/A";
+                    extraInfo = `<div>Max Duration: ${maxDur}m</div><div>Turned On At: ${turnedOnAt}</div>`;
+                } else if (type === "LIGHT_SCHEDULE") {
+                    extraInfo = `<div>Schedule: ${device.scheduleStart || "--:--"} - ${device.scheduleEnd || "--:--"}</div>`;
+                }
+
+                card.innerHTML = `
+                    <div>
+                        <div class="card-header">
+                            <div>
+                                <h3 class="device-name">${name}</h3>
+                                <span class="device-type">${type}</span>
+                            </div>
+                            <span class="badge ${status}">${status}</span>
+                        </div>
+                        <div class="card-body">
+                            <div>ID: ${deviceId}</div>
+                            <div>Floor ID: ${device.floorId || "N/A"}</div>
+                            ${extraInfo}
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="control-btn btn-on" onclick="window.updateDeviceStatus('${deviceId}', 'ON')">Set ON</button>
+                        <button class="control-btn btn-off" onclick="window.updateDeviceStatus('${deviceId}', 'OFF')">Set OFF</button>
+                        <button class="control-btn btn-disc" onclick="window.updateDeviceStatus('${deviceId}', 'DISCONNECTED')">Disconnect</button>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        window.updateDeviceStatus = async function(deviceId, newStatus) {
+            if (!db) {
+                alert("Not connected to Firebase!");
+                return;
+            }
+            try {
+                const updates = {};
+                updates[`devices/${deviceId}/status`] = newStatus;
+                if (newStatus === "ON") {
+                    updates[`devices/${deviceId}/turnedOnAt`] = Date.now();
+                }
+                await update(ref(db), updates);
+            } catch (e) {
+                alert("Failed to update status: " + e.message);
+            }
+        };
+
+        // Auto-connect if URL is present in input
+        if (dbUrlInput.value.trim()) {
+            initFirebase(dbUrlInput.value.trim());
+        }
+    </script>
+</body>
+</html>
