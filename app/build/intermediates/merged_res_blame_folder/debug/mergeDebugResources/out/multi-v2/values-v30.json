@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.minimalapp-mergeDebugResources-39:/values-v30/values-v30.xml",
+            "outputFile": "com.example.smarthome.app-mergeDebugResources-62:/values-v30/values-v30.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\User\\.gradle\\caches\\8.11.1\\transforms\\2a57094f1682b2b7e2b6f6c955f58ed7\\transformed\\material3-release\\res\\values-v30\\values-v30.xml",
+                    "source": "C:\\Users\\User\\.gradle\\caches\\8.11.1\\transforms\\84d0aa2a0dbb45c59da1c5e6e5ee65f0\\transformed\\material3-release\\res\\values-v30\\values-v30.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",

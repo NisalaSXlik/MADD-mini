@@ -2,14 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
+        android:name=".SmartHomeApplication"
         android:allowBackup="true"
-        android:label="Fitness Tracker"
+        android:label="Smart Home Monitoring &amp; Control"
         android:theme="@style/AppTheme">
-
-        <activity
-            android:name=".SummaryActivity"
-            android:taskAffinity="com.example.minimalapp.summarytask" />
-        <activity android:name=".WorkoutActivity" />
 
         <activity
             android:name=".MainActivity"

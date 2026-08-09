@@ -1,0 +1,13 @@
+C:\Users\User\Documents\Projects\Academic\MADD\pactical\app\src\main\java\com\example\smarthome\ui\device\DeviceDetailViewModel.kt
+C:\Users\User\Documents\Projects\Academic\MADD\pactical\app\src\main\java\com\example\smarthome\MainActivity.kt
+C:\Users\User\Documents\Projects\Academic\MADD\pactical\app\src\main\java\com\example\smarthome\ui\device\DeviceDetailScreen.kt
+C:\Users\User\Documents\Projects\Academic\MADD\pactical\app\src\main\java\com\example\smarthome\ui\floorplan\FloorPlanScreen.kt
+C:\Users\User\Documents\Projects\Academic\MADD\pactical\app\src\main\java\com\example\smarthome\ui\dashboard\DashboardScreen.kt
+C:\Users\User\Documents\Projects\Academic\MADD\pactical\app\src\main\java\com\example\smarthome\SmartHomeApplication.kt
+C:\Users\User\Documents\Projects\Academic\MADD\pactical\app\src\main\java\com\example\smarthome\data\model\Floor.kt
+C:\Users\User\Documents\Projects\Academic\MADD\pactical\app\src\main\java\com\example\smarthome\data\model\DeviceStatus.kt
+C:\Users\User\Documents\Projects\Academic\MADD\pactical\app\src\main\java\com\example\smarthome\data\model\Alert.kt
+C:\Users\User\Documents\Projects\Academic\MADD\pactical\app\src\main\java\com\example\smarthome\data\model\Device.kt
+C:\Users\User\Documents\Projects\Academic\MADD\pactical\app\src\main\java\com\example\smarthome\data\model\DeviceType.kt
+C:\Users\User\Documents\Projects\Academic\MADD\pactical\app\src\main\java\com\example\smarthome\data\model\UsageLog.kt
+C:\Users\User\Documents\Projects\Academic\MADD\pactical\app\src\main\java\com\example\smarthome\ui\dashboard\DashboardViewModel.kt

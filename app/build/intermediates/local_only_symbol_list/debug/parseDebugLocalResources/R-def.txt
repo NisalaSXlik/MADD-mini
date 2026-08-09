@@ -1,12 +1,11 @@
 R_DEF: Internal format may change without notice
 local
-id btnHome
-id btnSummary
-id btnWorkout
-id emailEditText
-layout activity_main
-layout activity_summary
-layout activity_workout
 string app_name
+string gcm_defaultSenderId
+string google_api_key
+string google_app_id
+string google_crash_reporting_api_key
+string google_storage_bucket
 string hello
+string project_id
 style AppTheme
