@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Home Hardware Simulator</title>
+    <title>Smart Home 3D Hardware Simulator</title>
     <style>
         :root {
             --primary: #6200EE;
-            --primary-variant: #3700B3;
             --background: #121212;
             --surface: #1E1E1E;
             --surface-card: #2D2D2D;
@@ -23,211 +22,273 @@
             background-color: var(--background);
             color: var(--text-primary);
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            overflow: hidden;
         }
 
-        header {
-            max-width: 1200px;
-            margin: 0 auto 20px auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #333;
-            padding-bottom: 15px;
+        #ui-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            background: rgba(30, 30, 30, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            max-width: 360px;
+            width: 100%;
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
         h1 {
-            margin: 0;
-            font-size: 24px;
+            margin: 0 0 10px 0;
+            font-size: 20px;
             color: #BB86FC;
         }
 
-        .config-box {
-            background: var(--surface);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
+        .config-group {
             display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
         }
 
-        .config-box input {
+        input {
             background: #333;
             border: 1px solid #444;
             color: white;
             padding: 8px 12px;
-            border-radius: 4px;
+            border-radius: 6px;
             flex: 1;
-            min-width: 200px;
+            font-size: 13px;
         }
 
         .btn {
             background: var(--primary);
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
+            padding: 8px 14px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
+            font-size: 13px;
         }
 
         .btn:hover {
-            background: var(--primary-variant);
+            opacity: 0.9;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 20px;
+        #status-bar {
+            font-size: 13px;
+            color: var(--warning);
+            margin-bottom: 15px;
+            font-weight: 500;
         }
 
-        .card {
-            background: var(--surface-card);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        .device-list {
+            max-height: 350px;
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            border-left: 6px solid var(--text-secondary);
-        }
-
-        .card.status-on {
-            border-left-color: var(--success);
-        }
-
-        .card.status-off {
-            border-left-color: var(--text-secondary);
-        }
-
-        .card.status-disconnected {
-            border-left-color: var(--danger);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 15px;
-        }
-
-        .device-name {
-            font-size: 18px;
-            font-weight: bold;
-            margin: 0 0 5px 0;
-        }
-
-        .device-type {
-            font-size: 12px;
-            text-transform: uppercase;
-            color: var(--text-secondary);
-            background: rgba(255,255,255,0.05);
-            padding: 2px 6px;
-            border-radius: 4px;
-            display: inline-block;
-        }
-
-        .badge {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        .badge.ON { background: rgba(76, 175, 80, 0.2); color: var(--success); }
-        .badge.OFF { background: rgba(160, 160, 160, 0.2); color: var(--text-secondary); }
-        .badge.DISCONNECTED { background: rgba(244, 67, 54, 0.2); color: var(--danger); }
-
-        .card-body {
-            margin-bottom: 15px;
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
-
-        .card-footer {
-            display: flex;
             gap: 8px;
-            flex-wrap: wrap;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            padding-top: 12px;
+            padding-right: 4px;
         }
 
-        .control-btn {
+        .device-item {
+            background: var(--surface-card);
+            padding: 10px 12px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .device-item.ON { border-left-color: var(--success); }
+        .device-item.OFF { border-left-color: var(--text-secondary); }
+        .device-item.DISCONNECTED { border-left-color: var(--danger); }
+
+        .device-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .action-btn {
             background: #444;
             color: white;
             border: none;
-            padding: 6px 10px;
+            padding: 4px 8px;
             border-radius: 4px;
             cursor: pointer;
+            font-size: 11px;
+        }
+        .action-btn:hover { background: #555; }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+
+        #tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
             font-size: 12px;
-            flex: 1;
-        }
-
-        .control-btn:hover {
-            background: #555;
-        }
-
-        .control-btn.btn-on { background: rgba(76, 175, 80, 0.3); color: #81C784; }
-        .control-btn.btn-off { background: rgba(160, 160, 160, 0.3); color: #E0E0E0; }
-        .control-btn.btn-disc { background: rgba(244, 67, 54, 0.3); color: #E57373; }
-
-        .status-msg {
-            text-align: center;
-            color: var(--text-secondary);
-            grid-column: 1 / -1;
-            padding: 40px;
+            pointer-events: none;
+            display: none;
+            z-index: 20;
+            border: 1px solid rgba(255,255,255,0.2);
         }
     </style>
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
 
-    <header>
-        <h1>Smart Home Hardware Simulator</h1>
-        <div id="connection-status" style="font-size: 14px; color: var(--warning);">Connecting to Firebase...</div>
-    </header>
+    <div id="ui-overlay">
+        <h1>Smart Home 3D Simulator</h1>
+        <div id="status-bar">Connecting to Firebase...</div>
+        
+        <div class="config-group">
+            <input type="text" id="db-url" placeholder="Realtime DB URL" />
+            <button class="btn" id="connect-btn">Connect</button>
+        </div>
 
-    <div class="config-box">
-        <input type="text" id="db-url" placeholder="Database URL (e.g., https://xxx-default-rtdb.firebaseio.com)" />
-        <button class="btn" id="connect-btn">Connect & Load Devices</button>
+        <div class="device-list" id="device-list">
+            <div style="color: #777; text-align: center; padding: 20px;">Connect DB to view 3D house appliances</div>
+        </div>
     </div>
 
-    <div class="container" id="device-container">
-        <div class="status-msg">Enter your Firebase Realtime Database URL above to connect.</div>
-    </div>
+    <div id="tooltip"></div>
+    <div id="canvas-container"></div>
 
-    <!-- Firebase SDKs (Modular v10 via CDN) -->
     <script type="module">
         import { initializeApp, getApps, deleteApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         let db = null;
-        let devicesRef = null;
+        let devicesData = {};
+        const deviceMeshes = {};
 
+        // Three.js Setup
+        const container = document.getElementById("canvas-container");
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x1a1a1a);
+        scene.fog = new THREE.FogExp2(0x1a1a1a, 0.015);
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(12, 15, 18);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.target.set(0, 1, 0);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(10, 25, 15);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        // Build 3D House Environment
+        // Floor
+        const floorGeo = new THREE.PlaneGeometry(16, 16);
+        const floorMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8 });
+        const houseFloor = new THREE.Mesh(floorGeo, floorMat);
+        houseFloor.rotation.x = -Math.PI / 2;
+        houseFloor.receiveShadow = true;
+        scene.add(houseFloor);
+
+        // Grid helper
+        const grid = new THREE.GridHelper(16, 16, 0x444444, 0x333333);
+        grid.position.y = 0.01;
+        scene.add(grid);
+
+        // Walls (Living Room / Kitchen layout)
+        const wallMat = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 0.9 });
+        
+        // Back Wall
+        const wall1 = new THREE.Mesh(new THREE.BoxGeometry(16, 4, 0.3), wallMat);
+        wall1.position.set(0, 2, -8);
+        scene.add(wall1);
+
+        // Left Wall
+        const wall2 = new THREE.Mesh(new THREE.BoxGeometry(0.3, 4, 16), wallMat);
+        wall2.position.set(-8, 2, 0);
+        scene.add(wall2);
+
+        // Raycaster for clicking 3D devices
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        const tooltip = document.getElementById("tooltip");
+
+        window.addEventListener("pointermove", (e) => {
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(scene.children, true);
+
+            let found = null;
+            for (let hit of intersects) {
+                if (hit.object.userData && hit.object.userData.deviceId) {
+                    found = hit.object.userData;
+                    break;
+                }
+            }
+
+            if (found) {
+                tooltip.style.display = "block";
+                tooltip.style.left = `${e.clientX + 15}px`;
+                tooltip.style.top = `${e.clientY + 15}px`;
+                tooltip.innerHTML = `<strong>${found.name}</strong><br>Type: ${found.type}<br>Status: ${found.status}`;
+                document.body.style.cursor = "pointer";
+            } else {
+                tooltip.style.display = "none";
+                document.body.style.cursor = "default";
+            }
+        });
+
+        window.addEventListener("click", () => {
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(scene.children, true);
+            for (let hit of intersects) {
+                if (hit.object.userData && hit.object.userData.deviceId) {
+                    const devId = hit.object.userData.deviceId;
+                    const currentStatus = devicesData[devId]?.status;
+                    const nextStatus = currentStatus === "ON" ? "OFF" : "ON";
+                    window.updateDeviceStatus(devId, nextStatus);
+                    break;
+                }
+            }
+        });
+
+        // Firebase Connection
         const connectBtn = document.getElementById("connect-btn");
         const dbUrlInput = document.getElementById("db-url");
-        const statusDiv = document.getElementById("connection-status");
-        const container = document.getElementById("device-container");
+        const statusDiv = document.getElementById("status-bar");
+        const deviceListContainer = document.getElementById("device-list");
 
-        // Try loading saved URL from localStorage
         const savedUrl = localStorage.getItem("sim_db_url");
-        if (savedUrl) {
-            dbUrlInput.value = savedUrl;
-        }
+        if (savedUrl) dbUrlInput.value = savedUrl;
 
         connectBtn.addEventListener("click", () => {
             const url = dbUrlInput.value.trim();
-            if (!url) {
-                alert("Please enter a valid Realtime Database URL");
-                return;
-            }
+            if (!url) { alert("Enter Database URL"); return; }
             localStorage.setItem("sim_db_url", url);
             initFirebase(url);
         });
@@ -237,105 +298,117 @@
                 statusDiv.innerText = "Connecting...";
                 statusDiv.style.color = "var(--warning)";
 
-                // Clean up any existing apps to avoid duplicate initialization error
-                getApps().forEach(existingApp => {
-                    deleteApp(existingApp).catch(() => {});
-                });
+                getApps().forEach(app => deleteApp(app).catch(() => {}));
 
-                const firebaseConfig = {
-                    databaseURL: databaseURL,
-                    projectId: "madd-mini-project"
-                };
+                const app = initializeApp({ databaseURL, projectId: "madd-mini-project" });
+                const auth = getAuth(app);
+                signInAnonymously(auth).catch(err => console.error(err));
 
-                const app = initializeApp(firebaseConfig);
                 db = getDatabase(app);
-                devicesRef = ref(db, "devices");
-
-                onValue(devicesRef, (snapshot) => {
-                    statusDiv.innerText = "Connected (Live)";
+                onValue(ref(db, "devices"), (snapshot) => {
+                    statusDiv.innerText = "Connected (3D Live Sync)";
                     statusDiv.style.color = "var(--success)";
-                    renderDevices(snapshot.val());
-                }, (error) => {
-                    statusDiv.innerText = "Connection Failed: " + error.message;
+                    devicesData = snapshot.val() || {};
+                    updateSceneDevices(devicesData);
+                    renderUIList(devicesData);
+                }, (err) => {
+                    statusDiv.innerText = "Error: " + err.message;
                     statusDiv.style.color = "var(--danger)";
                 });
-
             } catch (e) {
                 statusDiv.innerText = "Error: " + e.message;
                 statusDiv.style.color = "var(--danger)";
             }
         }
 
-        function renderDevices(devicesObj) {
-            container.innerHTML = "";
+        function updateSceneDevices(devices) {
+            // Remove old meshes
+            Object.keys(deviceMeshes).forEach(id => {
+                scene.remove(deviceMeshes[id]);
+            });
+            Object.keys(deviceMeshes).forEach(id => delete deviceMeshes[id]);
 
-            if (!devicesObj) {
-                container.innerHTML = '<div class="status-msg">No devices found in /devices path. Add some devices in your Android app or DB!</div>';
+            let index = 0;
+            Object.keys(devices).forEach(id => {
+                const dev = devices[id];
+                const status = dev.status || "OFF";
+
+                // Position in 3D room based on gridX, gridY or index
+                const gx = (dev.gridX !== undefined ? dev.gridX : (index % 5)) - 2.5;
+                const gy = (dev.gridY !== undefined ? dev.gridY : Math.floor(index / 5)) - 2.5;
+
+                // Create 3D appliance representation (Box with color reflecting status)
+                let color = 0x7f8c8d; // OFF
+                if (status === "ON") color = 0x2ecc71;
+                if (status === "DISCONNECTED" || status === "ERROR") color = 0xe74c3c;
+                if (status === "LOCKED") color = 0x3498db;
+
+                const geo = new THREE.BoxGeometry(1.2, 1.2, 1.2);
+                const mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.3, metalness: 0.2 });
+                const mesh = new THREE.Mesh(geo, mat);
+
+                mesh.position.set(gx * 2.5, 0.6, gy * 2.5);
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+                mesh.userData = { deviceId: id, name: dev.name, type: dev.type, status: status };
+
+                scene.add(mesh);
+                deviceMeshes[id] = mesh;
+                index++;
+            });
+        }
+
+        function renderUIList(devices) {
+            deviceListContainer.innerHTML = "";
+            if (Object.keys(devices).length === 0) {
+                deviceListContainer.innerHTML = '<div style="color:#777; text-align:center;">No devices found in DB. Run seed script!</div>';
                 return;
             }
 
-            Object.keys(devicesObj).forEach(deviceId => {
-                const device = devicesObj[deviceId];
-                const status = device.status || "OFF";
-                const type = device.type || "GENERIC";
-                const name = device.name || deviceId;
-
-                const card = document.createElement("div");
-                card.className = `card status-${status.toLowerCase()}`;
-
-                let extraInfo = "";
-                if (type === "IRON_SLOT") {
-                    const maxDur = device.maxOnDurationMinutes || 30;
-                    const turnedOnAt = device.turnedOnAt ? new Date(device.turnedOnAt).toLocaleTimeString() : "N/A";
-                    extraInfo = `<div>Max Duration: ${maxDur}m</div><div>Turned On At: ${turnedOnAt}</div>`;
-                } else if (type === "LIGHT_SCHEDULE") {
-                    extraInfo = `<div>Schedule: ${device.scheduleStart || "--:--"} - ${device.scheduleEnd || "--:--"}</div>`;
-                }
-
-                card.innerHTML = `
+            Object.keys(devices).forEach(id => {
+                const dev = devices[id];
+                const status = dev.status || "OFF";
+                const item = document.createElement("div");
+                item.className = `device-item ${status}`;
+                item.innerHTML = `
                     <div>
-                        <div class="card-header">
-                            <div>
-                                <h3 class="device-name">${name}</h3>
-                                <span class="device-type">${type}</span>
-                            </div>
-                            <span class="badge ${status}">${status}</span>
-                        </div>
-                        <div class="card-body">
-                            <div>ID: ${deviceId}</div>
-                            <div>Floor ID: ${device.floorId || "N/A"}</div>
-                            ${extraInfo}
-                        </div>
+                        <strong>${dev.name}</strong><br>
+                        <span style="font-size:11px; color:#aaa;">${dev.type} • ${status}</span>
                     </div>
-                    <div class="card-footer">
-                        <button class="control-btn btn-on" onclick="window.updateDeviceStatus('${deviceId}', 'ON')">Set ON</button>
-                        <button class="control-btn btn-off" onclick="window.updateDeviceStatus('${deviceId}', 'OFF')">Set OFF</button>
-                        <button class="control-btn btn-disc" onclick="window.updateDeviceStatus('${deviceId}', 'DISCONNECTED')">Disconnect</button>
+                    <div class="device-actions">
+                        <button class="action-btn" onclick="window.updateDeviceStatus('${id}', 'ON')">ON</button>
+                        <button class="action-btn" onclick="window.updateDeviceStatus('${id}', 'OFF')">OFF</button>
+                        <button class="action-btn" onclick="window.updateDeviceStatus('${id}', 'DISCONNECTED')">Disc</button>
                     </div>
                 `;
-
-                container.appendChild(card);
+                deviceListContainer.appendChild(item);
             });
         }
 
         window.updateDeviceStatus = async function(deviceId, newStatus) {
-            if (!db) {
-                alert("Not connected to Firebase!");
-                return;
+            if (!db) return;
+            const updates = {};
+            updates[`devices/${deviceId}/status`] = newStatus;
+            if (newStatus === "ON") {
+                updates[`devices/${deviceId}/turnedOnAt`] = Date.now();
             }
-            try {
-                const updates = {};
-                updates[`devices/${deviceId}/status`] = newStatus;
-                if (newStatus === "ON") {
-                    updates[`devices/${deviceId}/turnedOnAt`] = Date.now();
-                }
-                await update(ref(db), updates);
-            } catch (e) {
-                alert("Failed to update status: " + e.message);
-            }
+            await update(ref(db), updates);
         };
 
-        // Auto-connect if URL is present in input
+        // Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
         if (dbUrlInput.value.trim()) {
             initFirebase(dbUrlInput.value.trim());
         }
