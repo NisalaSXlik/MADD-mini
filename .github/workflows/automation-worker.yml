@@ -1,0 +1,40 @@
+name: 'Smart Home Automation Worker'
+
+on:
+  schedule:
+    - cron: '*/1 * * * *' # Runs every 1 minute
+  workflow_dispatch:
+
+jobs:
+  run-worker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          cd functions
+          npm install
+
+      - name: Build worker
+        run: |
+          cd functions
+          npm run build
+
+      - name: Run worker script
+        env:
+          FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+        run: |
+          # If service account key is stored in GitHub Secrets, write it out
+          if [ -n "${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}" ]; then
+            echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}" > functions/serviceAccountKey.json
+          fi
+          cd functions
+          node lib/worker.js

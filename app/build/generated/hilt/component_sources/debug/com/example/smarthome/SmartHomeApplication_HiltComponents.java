@@ -1,6 +1,8 @@
 package com.example.smarthome;
 
 import com.example.smarthome.ui.dashboard.DashboardViewModel_HiltModules;
+import com.example.smarthome.ui.device.DeviceDetailViewModel_HiltModules;
+import com.example.smarthome.ui.reports.ReportsViewModel_HiltModules;
 import dagger.Binds;
 import dagger.Component;
 import dagger.Module;
@@ -152,8 +154,10 @@ public final class SmartHomeApplication_HiltComponents {
   @Subcomponent(
       modules = {
           DashboardViewModel_HiltModules.KeyModule.class,
+          DeviceDetailViewModel_HiltModules.KeyModule.class,
           HiltWrapper_ActivityRetainedComponentManager_LifecycleModule.class,
           HiltWrapper_SavedStateHandleModule.class,
+          ReportsViewModel_HiltModules.KeyModule.class,
           ActivityCBuilderModule.class,
           ViewModelCBuilderModule.class
       }
@@ -192,7 +196,9 @@ public final class SmartHomeApplication_HiltComponents {
   @Subcomponent(
       modules = {
           DashboardViewModel_HiltModules.BindsModule.class,
-          HiltWrapper_HiltViewModelFactory_ViewModelModule.class
+          DeviceDetailViewModel_HiltModules.BindsModule.class,
+          HiltWrapper_HiltViewModelFactory_ViewModelModule.class,
+          ReportsViewModel_HiltModules.BindsModule.class
       }
   )
   @ViewModelScoped

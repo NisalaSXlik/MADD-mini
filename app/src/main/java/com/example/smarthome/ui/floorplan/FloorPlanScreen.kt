@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -41,7 +40,7 @@ fun FloorPlanScreen(
                 title = { Text(floor?.name ?: "Floor Plan") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(androidx.compose.material.icons.automirrored.filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 }
             )
