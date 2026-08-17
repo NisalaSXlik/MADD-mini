@@ -42,6 +42,15 @@ fun ReportsScreen(
             item {
                 Text(text = "Active & Past Alerts", style = MaterialTheme.typography.titleLarge)
             }
+            if (alerts.isEmpty()) {
+                item {
+                    Text(
+                        text = "No alerts recorded yet.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
             items(alerts) { alert ->
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -90,7 +99,16 @@ fun ReportsScreen(
             // Usage Report Section
             item {
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "7-Day Usage Report (ON Minutes)", style = MaterialTheme.typography.titleLarge)
+                Text(text = "7-Day Device Activity", style = MaterialTheme.typography.titleLarge)
+            }
+            if (sortedUsage.isEmpty()) {
+                item {
+                    Text(
+                        text = "No usage activity logged in the last 7 days.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
             items(sortedUsage) { summary ->
                 Card(modifier = Modifier.fillMaxWidth()) {
@@ -107,6 +125,11 @@ fun ReportsScreen(
                             Text(text = summary.deviceName, style = MaterialTheme.typography.titleMedium)
                             Text(text = "${summary.totalMinutes} mins", style = MaterialTheme.typography.bodyMedium)
                         }
+                        Text(
+                            text = "${summary.eventCount} events - Last: ${summary.lastAction}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                         // Simple Bar representation
                         Box(
                             modifier = Modifier

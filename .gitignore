@@ -68,3 +68,7 @@ node_modules/
 # dataconnect generated files
 .dataconnect
 functions/serviceAccountKey.json
+
+app/build/
+.gradle/
+.kotlin/

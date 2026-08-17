@@ -1,6 +1,7 @@
 package com.example.smarthome.data.repository
 
 import android.util.Log
+import com.example.smarthome.data.model.Alert
 import com.example.smarthome.data.model.UsageLog
 import com.example.smarthome.data.model.Device
 import com.example.smarthome.data.model.Floor
@@ -80,6 +81,50 @@ class SmartHomeRepository @Inject constructor() {
         awaitClose { ref.removeEventListener(listener) }
     }
 
+    fun observeAlerts(): Flow<List<Alert>> = callbackFlow {
+        val ref = database.getReference("alerts")
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val list = mutableListOf<Alert>()
+                for (child in snapshot.children) {
+                    val alert = child.getValue(Alert::class.java)
+                    if (alert != null) {
+                        list.add(alert)
+                    }
+                }
+                trySend(list.sortedByDescending { it.timestamp })
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("SmartHomeRepo", "observeAlerts cancelled", error.toException())
+            }
+        }
+        ref.addValueEventListener(listener)
+        awaitClose { ref.removeEventListener(listener) }
+    }
+
+    fun observeUsageLogs(): Flow<List<UsageLog>> = callbackFlow {
+        val ref = database.getReference("usageLogs")
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val list = mutableListOf<UsageLog>()
+                for (child in snapshot.children) {
+                    val log = child.getValue(UsageLog::class.java)
+                    if (log != null) {
+                        list.add(log)
+                    }
+                }
+                trySend(list.sortedByDescending { it.timestamp })
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("SmartHomeRepo", "observeUsageLogs cancelled", error.toException())
+            }
+        }
+        ref.addValueEventListener(listener)
+        awaitClose { ref.removeEventListener(listener) }
+    }
+
     fun addFloor(floor: Floor) {
         Log.d("SmartHomeRepo", "Adding floor ${floor.id} to DB")
         database.getReference("floors").child(floor.id).setValue(floor)
@@ -87,11 +132,52 @@ class SmartHomeRepository @Inject constructor() {
             .addOnFailureListener { e -> Log.e("SmartHomeRepo", "Failed to add floor ${floor.id}", e) }
     }
 
+    fun updateFloor(floor: Floor) {
+        Log.d("SmartHomeRepo", "Updating floor ${floor.id} in DB")
+        database.getReference("floors").child(floor.id).setValue(floor)
+            .addOnSuccessListener { Log.d("SmartHomeRepo", "Successfully updated floor ${floor.id}") }
+            .addOnFailureListener { e -> Log.e("SmartHomeRepo", "Failed to update floor ${floor.id}", e) }
+    }
+
+    fun deleteFloor(floorId: String) {
+        Log.d("SmartHomeRepo", "Deleting floor $floorId and its devices from DB")
+        val updates = mutableMapOf<String, Any?>("floors/$floorId" to null)
+        database.getReference("devices").get()
+            .addOnSuccessListener { snapshot ->
+                snapshot.children.forEach { child ->
+                    val device = child.getValue(Device::class.java)
+                    if (device?.floorId == floorId) {
+                        updates["devices/${child.key}"] = null
+                    }
+                }
+                database.getReference().updateChildren(updates)
+            }
+            .addOnFailureListener { e -> Log.e("SmartHomeRepo", "Failed to prepare floor delete $floorId", e) }
+    }
+
+    fun addDevice(device: Device) {
+        Log.d("SmartHomeRepo", "Adding device ${device.id} to DB")
+        database.getReference("devices").child(device.id).setValue(device)
+            .addOnSuccessListener { Log.d("SmartHomeRepo", "Successfully added device ${device.id}") }
+            .addOnFailureListener { e -> Log.e("SmartHomeRepo", "Failed to add device ${device.id}", e) }
+    }
+
     fun updateDevice(device: Device) {
         Log.d("SmartHomeRepo", "Updating device ${device.id} in DB: ${device.name} -> status=${device.status}")
         database.getReference("devices").child(device.id).setValue(device)
             .addOnSuccessListener { Log.d("SmartHomeRepo", "Successfully updated device ${device.id}") }
             .addOnFailureListener { e -> Log.e("SmartHomeRepo", "Failed to update device ${device.id}", e) }
+    }
+
+    fun deleteDevice(deviceId: String) {
+        Log.d("SmartHomeRepo", "Deleting device $deviceId from DB")
+        database.getReference("devices").child(deviceId).removeValue()
+            .addOnSuccessListener { Log.d("SmartHomeRepo", "Successfully deleted device $deviceId") }
+            .addOnFailureListener { e -> Log.e("SmartHomeRepo", "Failed to delete device $deviceId", e) }
+    }
+
+    fun acknowledgeAlert(alertId: String) {
+        database.getReference("alerts").child(alertId).child("acknowledged").setValue(true)
     }
 
     fun logUsage(log: UsageLog) {

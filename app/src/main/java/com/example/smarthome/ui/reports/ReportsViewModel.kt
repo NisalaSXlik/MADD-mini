@@ -1,59 +1,56 @@
 package com.example.smarthome.ui.reports
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.smarthome.data.model.Alert
-import com.example.smarthome.data.model.UsageLog
+import com.example.smarthome.data.repository.SmartHomeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import androidx.lifecycle.viewModelScope
 import javax.inject.Inject
 
 data class DeviceUsageSummary(
     val deviceId: String,
     val deviceName: String,
-    val totalMinutes: Int
+    val totalMinutes: Int,
+    val eventCount: Int,
+    val lastAction: String
 )
 
 @HiltViewModel
-class ReportsViewModel @Inject constructor() : ViewModel() {
+class ReportsViewModel @Inject constructor(
+    private val repository: SmartHomeRepository
+) : ViewModel() {
 
-    private val _alerts = MutableStateFlow<List<Alert>>(
-        listOf(
-            Alert(
-                id = "alert_1",
-                deviceId = "dev_1",
-                message = "Iron Slot reached max ON duration safety cutoff.",
-                timestamp = System.currentTimeMillis() - 3600000,
-                acknowledged = false
-            ),
-            Alert(
-                id = "alert_2",
-                deviceId = "dev_3",
-                message = "Master Hall Camera disconnected unexpectedly.",
-                timestamp = System.currentTimeMillis() - 86400000,
-                acknowledged = true
-            )
-        )
-    )
-    val alerts: StateFlow<List<Alert>> = _alerts.asStateFlow()
+    val alerts: StateFlow<List<Alert>> = repository.observeAlerts()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    private val _usageSummaries = MutableStateFlow<List<DeviceUsageSummary>>(
-        listOf(
-            DeviceUsageSummary(deviceId = "dev_1", deviceName = "Living Room Outlet", totalMinutes = 240),
-            DeviceUsageSummary(deviceId = "dev_2", deviceName = "Kitchen Light", totalMinutes = 180),
-            DeviceUsageSummary(deviceId = "dev_3", deviceName = "Master Hall Camera", totalMinutes = 420)
-        )
-    )
-    val usageSummaries: StateFlow<List<DeviceUsageSummary>> = _usageSummaries.asStateFlow()
+    val usageSummaries: StateFlow<List<DeviceUsageSummary>> = combine(
+        repository.observeUsageLogs(),
+        repository.observeDevices()
+    ) { logs, devices ->
+        val deviceNames = devices.associate { it.id to it.name }
+        val sevenDaysAgo = System.currentTimeMillis() - 7L * 24L * 60L * 60L * 1000L
+
+        logs
+            .filter { it.timestamp >= sevenDaysAgo }
+            .groupBy { it.deviceId }
+            .map { (deviceId, deviceLogs) ->
+                val sortedLogs = deviceLogs.sortedByDescending { it.timestamp }
+                DeviceUsageSummary(
+                    deviceId = deviceId,
+                    deviceName = deviceNames[deviceId] ?: "Unknown Device",
+                    totalMinutes = deviceLogs.sumOf { it.durationMinutes.coerceAtLeast(0) },
+                    eventCount = deviceLogs.size,
+                    lastAction = sortedLogs.firstOrNull()?.action ?: "NO_ACTIVITY"
+                )
+            }
+            .sortedByDescending { it.totalMinutes }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     fun acknowledgeAlert(alertId: String) {
-        viewModelScope.launch {
-            _alerts.value = _alerts.value.map { alert ->
-                if (alert.id == alertId) alert.copy(acknowledged = true) else alert
-            }
-        }
+        repository.acknowledgeAlert(alertId)
     }
 }

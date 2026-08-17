@@ -36,9 +36,14 @@ class DeviceDetailViewModel @Inject constructor(
             val current = device.value
             val newStatus = if (isOn) DeviceStatus.ON else DeviceStatus.OFF
             val turnedOnTimestamp = if (isOn) System.currentTimeMillis() else null
+            val durationMinutes = if (!isOn && current.turnedOnAt != null) {
+                ((System.currentTimeMillis() - current.turnedOnAt!!) / 60000L).toInt().coerceAtLeast(1)
+            } else {
+                0
+            }
             val updated = current.copy(status = newStatus, turnedOnAt = turnedOnTimestamp)
             repository.updateDevice(updated)
-            logUsage(if (isOn) "TURNED_ON" else "TURNED_OFF")
+            logUsage(if (isOn) "TURNED_ON" else "TURNED_OFF", durationMinutes)
         }
     }
 
@@ -90,13 +95,14 @@ class DeviceDetailViewModel @Inject constructor(
         }
     }
 
-    private fun logUsage(action: String) {
+    private fun logUsage(action: String, durationMinutes: Int = 0) {
         val current = device.value
         val log = UsageLog(
             id = java.util.UUID.randomUUID().toString(),
             deviceId = current.id,
             action = action,
-            timestamp = System.currentTimeMillis()
+            timestamp = System.currentTimeMillis(),
+            durationMinutes = durationMinutes
         )
         repository.logUsage(log)
     }
