@@ -42,6 +42,7 @@ export const smartHomeAutomation = functions.pubsub.schedule("every 1 minutes").
 
       if (elapsedMs > maxDurationMs) {
         updates[`devices/${deviceId}/status`] = "OFF";
+        updates[`devices/${deviceId}/turnedOnAt`] = null;
 
         // Push alert
         const newAlertRef = alertsRef.push();
@@ -85,3 +86,48 @@ export const smartHomeAutomation = functions.pubsub.schedule("every 1 minutes").
 
   return null;
 });
+
+export const deviceStatusAlert = functions.database
+  .ref("/devices/{deviceId}/status")
+  .onWrite(async (change, context) => {
+    if (!change.after.exists()) {
+      return null;
+    }
+
+    const beforeStatus = change.before.val();
+    const afterStatus = change.after.val();
+    if (beforeStatus === afterStatus) {
+      return null;
+    }
+
+    if (afterStatus !== "ERROR" && afterStatus !== "DISCONNECTED") {
+      return null;
+    }
+
+    const deviceId = context.params.deviceId;
+    const deviceSnap = await db.ref(`devices/${deviceId}`).once("value");
+    const device = deviceSnap.val() || {};
+    if (device.lastAlertedStatus === afterStatus) {
+      return null;
+    }
+
+    const deviceName = device.name || "Unknown Device";
+    const message =
+      afterStatus === "ERROR"
+        ? `Device error: ${deviceName} reported an error`
+        : `Device disconnected: ${deviceName} is disconnected`;
+
+    const alertRef = db.ref("alerts").push();
+    await db.ref().update({
+      [`devices/${deviceId}/lastAlertedStatus`]: afterStatus,
+      [`alerts/${alertRef.key}`]: {
+        id: alertRef.key,
+        deviceId,
+        message,
+        timestamp: Date.now(),
+        acknowledged: false,
+      },
+    });
+
+    return null;
+  });

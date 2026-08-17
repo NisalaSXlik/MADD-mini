@@ -2,19 +2,26 @@ import * as admin from "firebase-admin";
 import * as path from "path";
 import * as fs from "fs";
 
-// Initialize Firebase Admin SDK
-// You can supply serviceAccountKey.json in the functions folder or root
+// Initialize Firebase Admin SDK.
+// GitHub Actions should provide FIREBASE_SERVICE_ACCOUNT_KEY as a JSON secret.
+// Local runs can still use functions/serviceAccountKey.json.
 const serviceAccountPath = path.join(__dirname, "../serviceAccountKey.json");
+const databaseURL = process.env.FIREBASE_DATABASE_URL || "https://madd-mini-project-default-rtdb.firebaseio.com";
 
-if (fs.existsSync(serviceAccountPath)) {
+if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL
+  });
+} else if (fs.existsSync(serviceAccountPath)) {
   const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, "utf8"));
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: process.env.FIREBASE_DATABASE_URL || "https://madd-mini-project-default-rtdb.firebaseio.com"
+    databaseURL
   });
 } else {
-  // Fallback to default application credentials if configured via environment variable
-  admin.initializeApp();
+  admin.initializeApp({ databaseURL });
 }
 
 const db = admin.database();
@@ -56,6 +63,7 @@ async function runAutomationWorker() {
         if (elapsedMs > maxDurationMs) {
           console.log(`[Worker] IRON_SLOT cutoff triggered for ${deviceName} (${deviceId})`);
           updates[`devices/${deviceId}/status`] = "OFF";
+          updates[`devices/${deviceId}/turnedOnAt`] = null;
 
           const newAlertRef = alertsRef.push();
           updates[`alerts/${newAlertRef.key}`] = {
@@ -66,6 +74,23 @@ async function runAutomationWorker() {
             acknowledged: false,
           };
         }
+      }
+
+      if ((status === "ERROR" || status === "DISCONNECTED") && device.lastAlertedStatus !== status) {
+        const newAlertRef = alertsRef.push();
+        updates[`devices/${deviceId}/lastAlertedStatus`] = status;
+        updates[`alerts/${newAlertRef.key}`] = {
+          id: newAlertRef.key,
+          deviceId: deviceId,
+          message:
+            status === "ERROR"
+              ? `Device error: ${deviceName} reported an error`
+              : `Device disconnected: ${deviceName} is disconnected`,
+          timestamp: now,
+          acknowledged: false,
+        };
+      } else if (status === "ON" || status === "OFF") {
+        updates[`devices/${deviceId}/lastAlertedStatus`] = null;
       }
 
       // 2. LIGHT_SCHEDULE Auto On/Off Logic
@@ -99,10 +124,12 @@ async function runAutomationWorker() {
     }
   } catch (error) {
     console.error("[Worker] Error executing automation worker:", error);
+    process.exitCode = 1;
   }
 }
 
-// Run every 1 minute (60,000 ms)
-const INTERVAL_MS = 60 * 1000;
-runAutomationWorker();
-setInterval(runAutomationWorker, INTERVAL_MS);
+runAutomationWorker().then(() => {
+  if (process.env.WORKER_INTERVAL === "true") {
+    setInterval(runAutomationWorker, 60 * 1000);
+  }
+});

@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Assessment
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,6 +22,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.smarthome.ui.dashboard.DashboardScreen
 import com.example.smarthome.ui.dashboard.DashboardViewModel
 import com.example.smarthome.ui.device.DeviceDetailScreen
@@ -39,11 +42,21 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
                     val dashboardViewModel: DashboardViewModel = hiltViewModel()
                     val reportsViewModel: ReportsViewModel = hiltViewModel()
+                    val snackbarHostState = remember { SnackbarHostState() }
+                    val alerts by reportsViewModel.alerts.collectAsStateWithLifecycle()
 
                     val navBackStackEntry by navController.currentBackStackEntryAsState()
                     val currentRoute = navBackStackEntry?.destination?.route
+                    val latestUnacknowledgedAlert = alerts.firstOrNull { !it.acknowledged }
+
+                    LaunchedEffect(latestUnacknowledgedAlert?.id) {
+                        latestUnacknowledgedAlert?.let { alert ->
+                            snackbarHostState.showSnackbar(alert.message)
+                        }
+                    }
 
                     Scaffold(
+                        snackbarHost = { SnackbarHost(snackbarHostState) },
                         bottomBar = {
                             if (currentRoute == "dashboard" || currentRoute == "reports") {
                                 NavigationBar {

@@ -72,3 +72,4 @@ functions/serviceAccountKey.json
 app/build/
 .gradle/
 .kotlin/
+build/reports/problems/problems-report.html

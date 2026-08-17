@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,7 +19,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -57,8 +57,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.smarthome.data.model.Device
@@ -88,11 +86,11 @@ fun FloorPlanScreen(
         )
     }
 
-    var selectedCell by remember { mutableStateOf<Pair<Int, Int>?>(null) }
-    var selectedDevice by remember { mutableStateOf<Device?>(null) }
-    var movingDevice by remember { mutableStateOf<Device?>(null) }
-    var editingDevice by remember { mutableStateOf<Device?>(null) }
-    var deletingDevice by remember { mutableStateOf<Device?>(null) }
+    var selectedCell by remember(floorId) { mutableStateOf<Pair<Int, Int>?>(null) }
+    var selectedDevice by remember(floorId) { mutableStateOf<Device?>(null) }
+    var movingDevice by remember(floorId) { mutableStateOf<Device?>(null) }
+    var editingDevice by remember(floorId) { mutableStateOf<Device?>(null) }
+    var deletingDevice by remember(floorId) { mutableStateOf<Device?>(null) }
 
     LaunchedEffect(devices, selectedDevice?.id, editingDevice?.id, deletingDevice?.id, movingDevice?.id) {
         selectedDevice = selectedDevice?.let { current -> devices.find { it.id == current.id } }
@@ -133,7 +131,7 @@ fun FloorPlanScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),
+                    .aspectRatio(1f),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Box(
@@ -272,12 +270,8 @@ private fun DeviceGrid(
     onCellClick: (Int, Int) -> Unit,
     onDeviceClick: (Device) -> Unit
 ) {
-    var gridSize by remember { mutableStateOf(IntSize.Zero) }
-
     BoxWithConstraints(
-        modifier = Modifier
-            .fillMaxSize()
-            .onSizeChanged { gridSize = it }
+        modifier = Modifier.fillMaxSize()
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val cellWidth = size.width / cols
@@ -318,49 +312,47 @@ private fun DeviceGrid(
             }
         }
 
-        if (gridSize.width > 0 && gridSize.height > 0) {
-            val cellWidth = maxWidth / cols
-            val cellHeight = maxHeight / rows
+        val cellWidth = maxWidth / cols
+        val cellHeight = maxHeight / rows
 
-            repeat(rows) { y ->
-                repeat(cols) { x ->
-                    Box(
-                        modifier = Modifier
-                            .offset(x = cellWidth * x, y = cellHeight * y)
-                            .width(cellWidth)
-                            .height(cellHeight)
-                            .clickable { onCellClick(x, y) }
-                    )
-                }
-            }
-
-            devices.forEach { device ->
-                val statusColor = device.status.statusColor()
-                val isSelected = device.id == selectedDeviceId
-                val isMoving = device.id == movingDeviceId
+        repeat(rows) { y ->
+            repeat(cols) { x ->
                 Box(
                     modifier = Modifier
-                        .offset(
-                            x = cellWidth * device.gridX + (cellWidth - 44.dp) / 2,
-                            y = cellHeight * device.gridY + (cellHeight - 44.dp) / 2
-                        )
-                        .size(44.dp)
-                        .background(statusColor.copy(alpha = 0.18f), shape = CircleShape)
-                        .border(
-                            width = if (isSelected || isMoving) 3.dp else 1.dp,
-                            color = if (isMoving) Color(0xFF1565C0) else if (isSelected) Color(0xFF2E7D32) else statusColor.copy(alpha = 0.65f),
-                            shape = CircleShape
-                        )
-                        .clickable { onDeviceClick(device) },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = device.type.icon(),
-                        contentDescription = device.name,
-                        tint = statusColor,
-                        modifier = Modifier.size(26.dp)
+                        .offset(x = cellWidth * x, y = cellHeight * y)
+                        .width(cellWidth)
+                        .height(cellHeight)
+                        .clickable { onCellClick(x, y) }
+                )
+            }
+        }
+
+        devices.forEach { device ->
+            val statusColor = device.status.statusColor()
+            val isSelected = device.id == selectedDeviceId
+            val isMoving = device.id == movingDeviceId
+            Box(
+                modifier = Modifier
+                    .offset(
+                        x = cellWidth * device.gridX + (cellWidth - 44.dp) / 2,
+                        y = cellHeight * device.gridY + (cellHeight - 44.dp) / 2
                     )
-                }
+                    .size(44.dp)
+                    .background(statusColor.copy(alpha = 0.18f), shape = CircleShape)
+                    .border(
+                        width = if (isSelected || isMoving) 3.dp else 1.dp,
+                        color = if (isMoving) Color(0xFF1565C0) else if (isSelected) Color(0xFF2E7D32) else statusColor.copy(alpha = 0.65f),
+                        shape = CircleShape
+                    )
+                    .clickable { onDeviceClick(device) },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = device.type.icon(),
+                    contentDescription = device.name,
+                    tint = statusColor,
+                    modifier = Modifier.size(26.dp)
+                )
             }
         }
     }
